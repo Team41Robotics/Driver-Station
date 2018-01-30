@@ -7,10 +7,11 @@ root.title("GUI")
 width = 800
 height = 480
 #Full screen
-root.overrideredirect(True)
+'''root.overrideredirect(True)
 root.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
 root.focus_set()  #Move focus to this widget
-root.bind("<Escape>", lambda e: root.quit())
+root.bind("<Escape>", lambda e: root.quit())'''
+root.geometry("{}x{}".format(width, height))
 
 #Create canvas
 ctx = Canvas(root, width=width,
@@ -28,7 +29,12 @@ def resize(photo, w, h):
         #print("Zoom out " + str(scale) + "x")
         photo = photo.subsample(scale)
     return photo
-    
+
+bg = PhotoImage(file="driver_bg.gif")
+bg = resize(bg, 1600, 960)
+ctx.create_image(0, 0, image=bg)
+ctx.pack()
+
 #Load buttons
 btn = PhotoImage(file="button.gif")
 btnDep = PhotoImage(file="button_depressed.gif")
@@ -56,49 +62,55 @@ clickery = 287
 slidery = 99
 images = {"btn": btn, "clicker": clicker, "slider": slider}
 depressed = {"btn": btnDep, "clicker": clickerDep, "slider": sliderEmp}
-buttons = {
+def getButtons():
+    return {
     "btn": {
-        "btn_1": {"x": 77, "y": 304, "title": "Btn 1", "color": "white", "anchor": CENTER},
-        "btn_2": {"x": 136, "y": 240, "title": "Btn 2", "color": "white", "anchor": CENTER},
-        "btn_3": {"x": 194, "y": 304, "title": "Btn 3", "color": "white", "anchor": CENTER},
-        "btn_4": {"x": 136, "y": 365, "title": "Btn 4", "color": "white", "anchor": CENTER},
-        "btn_5": {"x": 517, "y":  401, "title": "Btn 5", "color": "white", "anchor": CENTER} #, "ty": 445}
+        "btn_1": {"x": 77, "y": 304, "title": "Btn 1", "anchor": CENTER},
+        "btn_2": {"x": 136, "y": 240, "title": "Btn 2", "anchor": CENTER},
+        "btn_3": {"x": 194, "y": 304, "title": "Btn 3", "anchor": CENTER},
+        "btn_4": {"x": 136, "y": 365, "title": "Btn 4", "anchor": CENTER},
+        "btn_5": {"x": 517, "y":  401, "title": "Btn 5", "anchor": CENTER} #, "ty": 445}
     },
     "clicker": {
-        "clicker_1": {"x": 330, "y": clickery, "title": "Clicky 1", "color": "white", "anchor": CENTER},
-        "clicker_2": {"x": 458, "y": clickery, "title": "Clicky 2", "color": "white", "anchor": CENTER},
-        "clicker_3": {"x": 586, "y": clickery, "title": "Clicky 3", "color": "white", "anchor": CENTER},
-        "clicker_4": {"x": 714, "y": clickery, "title": "Clicky 4", "color": "white", "anchor": CENTER}
+        "clicker_1": {"x": 330, "y": clickery, "title": "Clicky 1", "anchor": CENTER},
+        "clicker_2": {"x": 458, "y": clickery, "title": "Clicky 2", "anchor": CENTER},
+        "clicker_3": {"x": 586, "y": clickery, "title": "Clicky 3", "anchor": CENTER},
+        "clicker_4": {"x": 714, "y": clickery, "title": "Clicky 4", "anchor": CENTER}
     },
     "slider": {
-        "slider_1": {"x": 594, "y": slidery, "title": "Slider 1", "color": "black", "anchor": N, "ty": 180},
-        "slider_2": {"x": 688, "y": slidery, "title": "Slider 2", "color": "black", "anchor": N, "ty": 180}
+        "slider_1": {"x": 594, "y": slidery, "title": "Slider 1", "anchor": N, "ty": 180},
+        "slider_2": {"x": 688, "y": slidery, "title": "Slider 2", "anchor": N, "ty": 180}
     }
-}
+    }
+buttons = getButtons()
 
-#Draw buttons
-for category, elements in buttons.items():
-    for tag, coords in elements.items():
-        ctx.create_image(coords["x"], coords["y"], image=images[category], anchor=CENTER, tag=tag)
-        ty = coords["y"]
-        if coords["anchor"] == N: ty = coords["ty"]
-        ctx.create_text(coords["x"], ty, text=coords["title"], fill=coords["color"], anchor=coords["anchor"], tag=tag + "t")
-
+def drawButtons():
+    #Draw buttons
+    for category, elements in buttons.items():
+        for tag, coords in elements.items():
+            ctx.create_image(coords["x"], coords["y"], image=images[category], anchor=CENTER, tag=tag)
+            ty = coords["y"]
+            if coords["anchor"] == N: ty = coords["ty"]
+            ctx.create_text(coords["x"], ty, text=coords["title"], fill="white", anchor=coords["anchor"], tag=tag + "t")
+drawButtons()
 #Backup button
-buttonX = 134
-buttonY = 63
-buttonW = 100
-buttonH = 50
+btnImg = PhotoImage(file="btn.gif")
+btnW = 100
+btnH = 50
+btnImg = resize(btnImg, btnW, btnH)
+backupBtn = {"img": btnImg, "x": 80, "y": 40, "width": btnW, "height": btnH, "title": "Backup", "tag": "backupBtn"}
+resetBtn = {"img": btnImg, "x": 80, "y": 100, "width": btnW, "height": btnH, "title": "Reset", "tag": "resetBtn"}
+checkBtn = {"img": btnImg, "x": 80, "y": 160, "width": btnW, "height": btnH, "title": "Checklist", "tag": "checkBtn"}
 
-def drawBackup():
-	ctx.create_rectangle(buttonX - buttonW/2, buttonY - buttonH/2,
-                buttonX + buttonW/2, buttonY + buttonH/2, fill="gray",
-                tag="backupBtn")
-	ctx.create_text(buttonX, buttonY, text="Backup", anchor=CENTER, fill="white",
-                tag="backupTxt")
-
-drawBackup()
-
+def drawBtn(btn):
+        ctx.create_image(btn["x"], btn["y"], image=btn["img"], anchor=CENTER, tag=btn["tag"])
+        ctx.create_text(btn["x"], btn["y"], text=btn["title"], anchor=CENTER, fill="white", tag=btn["tag"] + "T")
+def deleteBtn(btn):
+	ctx.delete(btn["tag"])
+	ctx.delete(btn["tag"] + "T")
+drawBtn(backupBtn)
+drawBtn(resetBtn)
+drawBtn(checkBtn)
 #Establish backup functionality
 state = 0
 changeTag = ""
@@ -125,15 +137,34 @@ def depress(tag):
     category = tag.split("_")[0]
     ctx.delete(tag)
     ctx.create_image(buttons[category][tag]["x"], buttons[category][tag]["y"], image=depressed[category], anchor=CENTER, tag=tag)
+def showChecklist():
+	ctx.create_rect(
+	print()
 def callback(event):
-    global state, changeTag
+    global state, changeTag, buttons
+    if rectBtn(event.x, event.y, width - 20, height - 20, 40, 40):
+    	root.quit()
+    if rectBtn(event.x, event.y, resetBtn["x"], resetBtn["y"], resetBtn["width"], resetBtn["height"]):
+        deleteBtn(backupBtn)
+        for category, elements in buttons.items():
+            for tag, coords in elements.items():
+                ctx.delete(tag)
+                ctx.delete(tag + "t")
+        buttons = getButtons()
+        drawButtons()
+        drawBtn(backupBtn)
+        state = 0
+    elif rectBtn(event.x, event.y, checkBtn["x"], checkBtn["y"], checkBtn["width"], checkBtn["height"]):
+        state = 0
+        deleteBtn(backupBtn)
+        drawBtn(backupBtn)
+        showChecklist()
     #State 0: Normal state
-    if state == 0 and rectBtn(event.x, event.y, buttonX, buttonY, buttonW, buttonH):
+    elif state == 0 and rectBtn(event.x, event.y, backupBtn["x"], backupBtn["y"], backupBtn["width"], backupBtn["height"]):
         #The user has clicked on the button
-        ctx.delete("backupBtn")
-        ctx.delete("backupTxt")
-        ctx.create_text(buttonX, buttonY, text="Click on a button to replace",
-                        anchor=CENTER, fill="black", tag="backupTxt")
+        deleteBtn(backupBtn)
+        ctx.create_text(backupBtn["x"]-btnW/2, backupBtn["y"], text="Click on a button to replace",
+                        anchor=W, fill="white", tag="backupBtnT")
         state = 1
     #State 1: Choosing a button to backup
     elif state == 1:
@@ -142,27 +173,34 @@ def callback(event):
         if len(changeTag) > 0:
             depress(changeTag)
             state = 2
-            ctx.delete("backupTxt")
-            ctx.create_text(buttonX, buttonY, text="Click on a button with which to replace it",
-                            anchor=CENTER, fill="black", tag="backupTxt")
+            ctx.delete("backupBtnT")
+            ctx.create_text(backupBtn["x"]-btnW/2, backupBtn["y"], text="Click on a button with which to replace it",
+                            anchor=W, fill="white", tag="backupBtnT")
     elif state == 2:
         clicked = btnClicked(event.x, event.y)
         if clicked:
-            ctx.delete(changeTag)
-            ctx.delete(changeTag + "t")
-            ctx.delete(clicked + "t")
-            ctx.delete(clicked)
             category = clicked.split("_")[0]
-            buttons[category][changeTag]["x"] = buttons[category][clicked]["x"]
-            buttons[category][changeTag]["y"] = buttons[category][clicked]["y"]
-            if buttons[category][changeTag]["anchor"] == N: buttons[category][changeTag]["ty"] = buttons[category][clicked]["ty"]
-            ctx.create_image(buttons[category][changeTag]["x"], buttons[category][changeTag]["y"], image=images[category], anchor=CENTER, tag=changeTag)
-            ty = buttons[category][changeTag]["y"]
-            if buttons[category][changeTag]["anchor"] == N: ty = buttons[category][changeTag]["ty"]
-            ctx.create_text(buttons[category][changeTag]["x"], ty, text=buttons[category][changeTag]["title"], fill=buttons[category][changeTag]["color"], anchor=buttons[category][changeTag]["anchor"], tag=changeTag + "t")
-            state = 0
-            ctx.delete("backupTxt")
-            drawBackup()
+            category2 = changeTag.split("_")[0]
+            if category == category2:
+                ctx.delete(changeTag)
+                print("Deleting " + changeTag)
+                ctx.delete(changeTag + "t")
+                ctx.delete(clicked + "t")
+                #ctx.delete(clicked)
+                buttons[category][changeTag]["x"] = buttons[category][clicked]["x"]
+                buttons[category][changeTag]["y"] = buttons[category][clicked]["y"]
+                if buttons[category][changeTag]["anchor"] == N: buttons[category][changeTag]["ty"] = buttons[category][clicked]["ty"]
+                #ctx.create_image(buttons[category][changeTag]["x"], buttons[category][changeTag]["y"], image=images[category], anchor=CENTER, tag=changeTag)
+                ty = buttons[category][changeTag]["y"]
+                if buttons[category][changeTag]["anchor"] == N: ty = buttons[category][changeTag]["ty"]
+                ctx.create_text(buttons[category][changeTag]["x"], ty, text=buttons[category][changeTag]["title"], fill="white", anchor=buttons[category][changeTag]["anchor"], tag=changeTag + "t")
+                state = 0
+                ctx.delete("backupBtnT")
+                drawBtn(backupBtn)
+            else:
+                ctx.delete("backupBtnT")
+                ctx.create_text(backupBtn["x"]-btnW/2, backupBtn["y"], text="Error: Incompatible types",
+                                anchor=W, fill="white", tag="backupBtnT")
             
 
 ctx.bind("<Button-1>", callback)
